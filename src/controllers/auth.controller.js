@@ -192,7 +192,7 @@ async function requestResetPass(req, res) {
     console.log(url);
     sendForgotPass({
       to: email,
-      url: `https://jokopi-react.vercel.app/${url}`,
+      url: `http://localhost:3001${url}`,
     });
     res.status(201).json({
       msg: "Link reset password created! Expired in 10 minutes",
@@ -207,33 +207,34 @@ async function requestResetPass(req, res) {
 
 async function getDataResetPass(req, res) {
   try {
-    const result = await authModel.checkReqResetPass(req.query.verify);
-    if (result.rows.length < 1) {
-      res.status(400).json({
-        msg: "Verify not found",
-      });
-      return;
+    console.log("Received request:", req.query); // Debugging request query params
+    const { verify, code } = req.query;
+
+    // Memeriksa apakah permintaan reset password valid
+    const result = await authModel.checkReqResetPass(verify);
+    console.log("Check reset pass result:", result); // Debugging result
+
+    if (result && result.rows.length === 0) {
+      console.log("Invalid reset password link"); // Debugging
+      return res.status(400).json({ message: "Invalid reset password link" });
     }
-    if (result.rows[0].code !== req.query.code) {
-      res.status(404).json({
-        msg: "Verify not found",
-      });
-      return;
+
+    if (parseInt(result.rows[0].code) !== parseInt(code)) {
+      console.log("Invalid reset password code"); // Debugging
+      return res.status(400).json({ message: "Invalid reset password code" });
     }
+    // Link sudah kedaluwarsa
+    const expiredAt = result.rows[0].expired_at;
     const now = new Date();
-    if (result.rows[0].expired_at < now) {
-      return res.status(400).json({
-        msg: "The link has expired",
-      });
+    if (expiredAt < now) {
+      console.log("The link has expired"); // Debugging
+      return res.status(400).json({ message: "The link has expired" });
     }
-    res.status(204).json({
-      msg: "Found reset pass link",
-    });
-  } catch (error) {
-    console.log(error.message);
-    res.status(500).json({
-      msg: "Internal Server Error",
-    });
+
+    res.status(200).json({ message: "Valid reset password link" });
+  } catch (err) {
+    console.error("Error during reset password validation:", err); // Error logging
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 }
 

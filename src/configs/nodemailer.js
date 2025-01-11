@@ -1,12 +1,12 @@
 import { createTransport } from "nodemailer";
 
 const transporter = createTransport({
-  host: process.env.SMTP_HOST,
+  host: "smtp.gmail.com",
   port: 465,
   secure: true,
   auth: {
-    user: process.env.SMTP_EMAIL,
-    pass: process.env.SMTP_PASS,
+    user: "kopiboss72.chy@gmail.com",
+    pass: "kmbbifvbrqcdnuoj",
   },
 });
 

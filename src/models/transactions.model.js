@@ -1,4 +1,4 @@
-import db from '../helpers/postgre.js';
+import db from "../helpers/postgre.js";
 
 function index(req) {
   return new Promise((resolve, reject) => {
@@ -79,7 +79,7 @@ const createTransaction = (client, body, userId) => {
       userId,
       payment_id,
       delivery_id,
-      promo_id || 0,
+      promo_id || null,
       notes,
       address,
     ];

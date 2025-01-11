@@ -1,8 +1,8 @@
-import express from 'express';
+import express from "express";
 
-import productController from '../controllers/products.controller.js';
-import auth from '../middlewares/auth.js';
-import memoryUpload from '../middlewares/memoryUpload.js';
+import productController from "../controllers/products.controller.js";
+import auth from "../middlewares/auth.js";
+import memoryUpload from "../middlewares/memoryUpload.js";
 
 const productsRouter = express.Router();
 

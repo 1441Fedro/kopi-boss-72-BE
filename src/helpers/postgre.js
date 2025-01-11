@@ -1,4 +1,4 @@
-import pg from 'pg';
+import pg from "pg";
 // import dotenv from 'dotenv';
 // dotenv.config();
 
@@ -13,9 +13,9 @@ const db = new pg.Pool({
 });
 db.connect((err) => {
   if (err) {
-    console.error('connection error', err.stack);
+    console.error("connection error", err.stack);
   } else {
-    console.log('connected to database');
+    console.log("connected to database");
   }
 });
 

@@ -1,7 +1,7 @@
-import notification from '../helpers/notification.js';
-import db from '../helpers/postgre.js';
-import fcmModel from '../models/fcm.model.js';
-import transactionsModel from '../models/transactions.model.js';
+import notification from "../helpers/notification.js";
+import db from "../helpers/postgre.js";
+import fcmModel from "../models/fcm.model.js";
+import transactionsModel from "../models/transactions.model.js";
 
 async function index(req, res) {
   try {
@@ -62,6 +62,7 @@ async function store(req, res) {
       `SELECT fee FROM deliveries WHERE id = $1`,
       [delivery_id]
     );
+
     const paymentFee = await client.query(
       `SELECT fee FROM payments WHERE id = $1`,
       [payment_id]

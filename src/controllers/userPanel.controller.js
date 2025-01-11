@@ -31,39 +31,40 @@ async function addCart(req, res) {
   const { id } = req.authInfo;
   const { product_id, cart } = req.body;
 
+  if (!product_id || !Array.isArray(cart) || cart.length === 0) {
+    return res.status(400).json({ msg: "Invalid input data" });
+  }
+
   try {
     await client.query("BEGIN");
 
-    // check if product with same size already exists in cart
     for (const item of cart) {
-      const res = await client.query(
+      const queryResult = await client.query(
         "SELECT * FROM carts WHERE product_id=$1 AND size_id=$2 AND user_id=$3",
         [product_id, item.size, id]
       );
-      if (res.rows.length > 0) {
-        // update the existing row with new count
+
+      if (queryResult.rows.length > 0) {
         await client.query(
           "UPDATE carts SET count=$1 WHERE product_id=$2 AND size_id=$3 AND user_id=$4",
-          [res.rows[0].count + item.count, product_id, item.size, id]
+          [queryResult.rows[0].count + item.count, product_id, item.size, id]
         );
       } else {
-        // create a new row
         await client.query(
-          "INSERT INTO carts (product_id, size_id, count, user_id) VALUES ($1, $2, $3, $4)",
-          [product_id, item.size, item.count, id]
+          "INSERT INTO carts (user_id, product_id, size_id, count) VALUES ($1, $2, $3, $4)",
+          [id, product_id, item.size, item.count]
         );
       }
     }
 
     await client.query("COMMIT");
-    res.status(201).json({
-      msg: "Add to cart successful",
-    });
+    res.status(201).json({ msg: "Add to cart successful" });
   } catch (err) {
-    console.log(err.message);
-    res.status(500).json({
-      msg: "Internal Server Error",
-    });
+    await client.query("ROLLBACK");
+    console.error("Transaction error:", err.message);
+    res.status(500).json({ msg: "Internal Server Error" });
+  } finally {
+    client.release();
   }
 }
 

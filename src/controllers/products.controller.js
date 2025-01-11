@@ -1,7 +1,7 @@
-import crypto from 'crypto';
+import crypto from "crypto";
 
-import uploader from '../helpers/cloudinary.js';
-import productModel from '../models/products.model.js';
+import uploader from "../helpers/cloudinary.js";
+import productModel from "../models/products.model.js";
 
 async function index(req, res) {
   try {

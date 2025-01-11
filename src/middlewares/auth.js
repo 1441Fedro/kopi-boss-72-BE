@@ -1,6 +1,6 @@
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 
-import tokenModel from '../models/token.model.js';
+import tokenModel from "../models/token.model.js";
 
 async function check(req, res, next) {
   // take Auth.. from header

@@ -172,18 +172,38 @@ async function destroy(req, res) {
 
 async function checkCode(req, res) {
   try {
-    const { code } = req.query;
-    const result = await promoModel.checkCode(code);
-    if (result.rows.length === 0) {
-      res.status(404).json({
-        status: 404,
-        msg: "Data not found",
+    const { code, productId } = req.query; // Ambil kode promo dan product_id dari query
+    if (!code || !productId) {
+      return res.status(400).json({
+        status: 400,
+        msg: "Promo code and product ID are required",
       });
-      return;
     }
+
+    const result = await promoModel.checkCode(code); // Ambil data promo berdasarkan kode
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        status: 404,
+        msg: "Promo code not found or expired",
+      });
+    }
+
+    const promoData = result.rows[0]; // Data promo
+    if (promoData.product_id.toString() !== productId.toString()) {
+      return res.status(422).json({
+        status: 422,
+        msg: "Promo code cannot be applied to this product",
+      });
+    }
+
+    // Promo valid, kirim data promo
     res.status(200).json({
-      msg: "Promo code found",
-      data: result.rows[0],
+      msg: "Promo code applied successfully",
+      data: {
+        id: promoData.id,
+        discount: promoData.discount,
+        discounted_price: promoData.discounted_price,
+      },
     });
   } catch (err) {
     console.log(err.message);

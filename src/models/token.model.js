@@ -1,6 +1,6 @@
-import { model } from 'mongoose';
+import { model } from "mongoose";
 
-import tokenSchema from '../schemas/token.schema.js';
+import tokenSchema from "../schemas/token.schema.js";
 
 const Token = model("tokens", tokenSchema);
 

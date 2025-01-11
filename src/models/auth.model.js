@@ -1,7 +1,7 @@
-import bcrypt from 'bcrypt';
-import crypto from 'crypto';
+import bcrypt from "bcrypt";
+import crypto from "crypto";
 
-import db from '../helpers/postgre.js';
+import db from "../helpers/postgre.js";
 
 function getUserInfo(email) {
   return new Promise((resolve, reject) => {
@@ -81,9 +81,14 @@ function requestResetPass(userId) {
   return new Promise((resolve, reject) => {
     const verifyId = crypto.randomBytes(25).toString("hex");
     const code = Math.floor(Math.random() * 90000000 + 10000000);
+
+    // Tentukan waktu kedaluwarsa (misalnya 1 jam setelah permintaan)
+    const expiredAt = new Date();
+    expiredAt.setHours(expiredAt.getHours() + 1); // Set waktu kedaluwarsa 1 jam ke depan
+
     const sql =
-      "INSERT INTO reset_password (user_id, verify, code) VALUES ($1, $2, $3) RETURNING *";
-    db.query(sql, [userId, verifyId, code], (err, result) => {
+      "INSERT INTO reset_password (user_id, verify, code, expired_at) VALUES ($1, $2, $3, $4) RETURNING *";
+    db.query(sql, [userId, verifyId, code, expiredAt], (err, result) => {
       if (err) return reject(err);
       resolve(result);
     });
@@ -102,9 +107,24 @@ function checkUserResetPass(verify) {
 
 function checkReqResetPass(verify) {
   return new Promise((resolve, reject) => {
+    console.log("Verifying reset password request for:", verify); // Debugging
     const sql = `SELECT * FROM reset_password WHERE verify = $1`;
     db.query(sql, [verify], (err, result) => {
-      if (err) return reject(err);
+      if (err) {
+        console.error("Error during database query:", err); // Debugging
+        return reject(err);
+      }
+
+      if (result && result.rows.length > 0) {
+        const resetRequest = result.rows[0];
+        const expiredAt = resetRequest.expired_at; // Waktu kedaluwarsa
+        const now = new Date();
+
+        if (expiredAt < now) {
+          console.log("Reset password link has expired"); // Debugging
+          return reject(new Error("The link has expired"));
+        }
+      }
       resolve(result);
     });
   });

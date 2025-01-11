@@ -1,8 +1,8 @@
-import { Messaging } from 'firebase-admin/messaging';
+import { Messaging } from "firebase-admin/messaging";
 
-import firebase from './firebase.js';
+// import firebase from './firebase.js';
 
-const Notification = new Messaging(firebase);
+// const Notification = new Messaging(firebase);
 
 const send = async (token, { title, body, channel = "general" }) => {
   try {
