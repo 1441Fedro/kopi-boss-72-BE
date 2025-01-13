@@ -44,7 +44,7 @@ async function store(req, res) {
   const client = await db.connect();
   try {
     await client.query("BEGIN");
-    const { payment_id, delivery_id } = body;
+    const { payment_id, delivery_id, promo_id } = body;
     const result = await transactionsModel.createTransaction(
       client,
       body,
@@ -68,10 +68,17 @@ async function store(req, res) {
       [payment_id]
     );
 
-    const grandTotal =
-      Number(total) +
-      Number(deliveryFee.rows[0].fee) +
-      Number(paymentFee.rows[0].fee);
+    let grandTotal = Number(total); // Default jika tidak ada diskon
+    if (promo_id) {
+      const discount = await client.query(
+        `SELECT discount FROM promo WHERE id = $1`,
+        [promo_id]
+      );
+      if (discount.rows.length > 0) {
+        grandTotal =
+          Number(total) * (1 - Number(discount.rows[0].discount) / 100);
+      }
+    }
 
     await transactionsModel.updateGrandTotal(client, transactionId, grandTotal);
 
